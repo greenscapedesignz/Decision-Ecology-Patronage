@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Patronage Intelligence — Stakeholder Intelligence System</title>
+<style>
+/* ── VARIABLES ───────────────────────────────────────── */
+:root{
+  --bg:#060e09;--surf:#0c1a10;--card:#101f13;--bdr:#1e3523;
+  --p500:#2e5c4a;--p400:#4f7f70;--p300:#76a786;--p200:#a8c9b4;--p100:#d4e8dc;
+  --amber:#c67a2b;--amblt:#e8a44a;--warn:#7a2020;
+  --tx:#e8f0ec;--mu:#7a9a87;--dim:#4a6054;
+  --ff:Georgia,'Times New Roman',serif;
+  --fm:'Courier New',Courier,monospace;
+}
+/* ── RESET ───────────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--ff);font-size:16px;line-height:1.6;overflow-x:hidden}
+button{font-family:var(--ff);cursor:pointer}
+input,textarea,select{font-family:var(--ff)}
+/* ── LAYOUT ──────────────────────────────────────────── */
+#app{min-height:100vh;position:relative}
+#app::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 60% at 20% 20%,rgba(46,92,74,.1) 0%,transparent 60%),radial-gradient(ellipse 60% 80% at 80% 80%,rgba(15,32,24,.15) 0%,transparent 60%);pointer-events:none;z-index:0}
+#app::after{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(46,92,74,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(46,92,74,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+.scr{position:relative;z-index:1;min-height:100vh}
+.cx{max-width:960px;margin:0 auto;padding:0 24px}
+.cx-sm{max-width:640px;margin:0 auto;padding:0 24px}
+.cx-lg{max-width:1200px;margin:0 auto;padding:0 24px}
+/* ── TYPOGRAPHY ──────────────────────────────────────── */
+.display{font-family:var(--ff);font-weight:700;line-height:1.1;letter-spacing:-.02em}
+.mono{font-family:var(--fm);letter-spacing:.05em}
+.label{font-family:var(--fm);font-size:10px;letter-spacing:.1em;color:var(--mu)}
+/* ── BUTTONS ─────────────────────────────────────────── */
+.btn{display:inline-block;border:none;border-radius:3px;font-size:15px;font-family:var(--ff);transition:all .2s;text-decoration:none}
+.btn-primary{background:var(--p500);color:var(--p100);padding:14px 32px;box-shadow:0 0 0 1px rgba(118,167,134,.3),0 4px 20px rgba(46,92,74,.25)}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--mu);padding:12px 20px;border:1px solid var(--bdr)}
+.btn-ghost:hover{border-color:var(--p400);color:var(--p200)}
+.btn-sm{padding:10px 20px;font-size:13px;font-family:var(--fm)}
+/* ── CARDS ───────────────────────────────────────────── */
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:4px;padding:24px;transition:border-color .2s,transform .2s}
+.card-hover:hover{border-color:var(--p400);transform:translateY(-2px)}
+/* ── FORM ELEMENTS ───────────────────────────────────── */
+.q-block{background:var(--card);border:1px solid var(--bdr);border-radius:4px;padding:20px;margin-bottom:16px}
+.q-label{font-size:14px;color:var(--mu);margin-bottom:12px;display:block;line-height:1.5}
+.opt-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:9px;cursor:pointer}
+.opt-radio{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--p400);background:transparent;flex-shrink:0;margin-top:2px;transition:all .15s;cursor:pointer}
+.opt-radio.active{background:var(--p300);border-color:var(--p300);box-shadow:inset 0 0 0 3px var(--card)}
+.opt-check{width:16px;height:16px;border-radius:3px;border:1.5px solid var(--p400);background:transparent;flex-shrink:0;margin-top:2px;transition:all .15s;cursor:pointer}
+.opt-check.active{background:var(--p300);border-color:var(--p300)}
+.opt-check.active::after{content:'✓';display:block;text-align:center;font-size:10px;line-height:16px;color:var(--card)}
+.opt-label{font-size:14px;color:var(--mu);transition:color .15s;line-height:1.5}
+.opt-label.active{color:var(--p200)}
+textarea.q-ta{width:100%;min-height:90px;padding:12px 14px;background:rgba(10,20,14,.8);border:1px solid var(--bdr);border-radius:4px;color:var(--tx);font-family:var(--ff);font-size:14px;resize:vertical;outline:none;line-height:1.6;transition:border-color .2s}
+textarea.q-ta:focus{border-color:var(--p400)}
+textarea.q-ta::placeholder{color:var(--dim)}
+.range-wrap{margin-top:4px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:3px;background:var(--bdr);border-radius:2px;outline:none;cursor:pointer;accent-color:var(--p300)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--p300);border:2px solid var(--p400);cursor:pointer}
+.range-labels{display:flex;justify-content:space-between;margin-top:8px;gap:16px}
+.range-label{font-size:11px;color:var(--dim);font-family:var(--ff);max-width:45%}
+.range-val{font-family:var(--fm);font-size:12px;color:var(--p300);flex-shrink:0}
+/* ── SIGNAL TAGS ─────────────────────────────────────── */
+.sig-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.sig{display:inline-flex;align-items:center;gap:4px;font-family:var(--fm);font-size:10px;padding:3px 9px;border-radius:3px;animation:fadein .3s ease}
+.sig-amber{background:rgba(198,122,43,.12);border:1px solid rgba(198,122,43,.3);color:var(--amblt)}
+.sig-green{background:rgba(46,92,74,.2);border:1px solid rgba(118,167,134,.4);color:var(--p200)}
+.sig-warn{background:rgba(122,32,32,.2);border:1px solid rgba(198,80,80,.3);color:#e89a9a}
+/* ── PROGRESS BAR ────────────────────────────────────── */
+.prog-wrap{display:flex;gap:6px;align-items:center}
+.prog-seg{height:3px;border-radius:2px;width:28px;transition:background .3s}
+.prog-done{background:var(--p400)}
+.prog-todo{background:var(--bdr)}
+/* ── PROCESSING ──────────────────────────────────────── */
+.spinner{width:64px;height:64px;border:2px solid var(--bdr);border-top:2px solid var(--p300);border-radius:50%;animation:spin 1.2s linear infinite}
+.proc-bar{height:2px;background:var(--bdr);border-radius:1px;overflow:hidden}
+.proc-fill{height:100%;background:var(--p300);border-radius:1px;transition:width .6s ease}
+/* ── PERSONA CARD ────────────────────────────────────── */
+.dim-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.dim-card{background:rgba(10,20,14,.9);border:1px solid var(--bdr);border-radius:6px;padding:16px;transition:border-color .2s}
+.dim-card:hover{border-color:var(--p400)}
+.dim-model{font-family:var(--fm);font-size:9px;color:var(--p400);margin-bottom:3px;letter-spacing:.08em}
+.dim-name{font-family:var(--fm);font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px}
+.dim-val{font-size:14px;font-weight:600;color:var(--p100);line-height:1.4;margin-bottom:6px}
+.dim-insight{font-size:12px;color:var(--mu);line-height:1.5}
+.panel{background:var(--card);border:1px solid var(--bdr);border-radius:6px;padding:24px}
+.panel-title{font-family:var(--fm);font-size:10px;color:var(--p400);margin-bottom:14px;letter-spacing:.08em}
+.panel-sub{font-family:var(--fm);font-size:9px;color:var(--dim);margin-bottom:6px;letter-spacing:.06em}
+.flag-row{display:flex;gap:10px;margin-bottom:10px}
+.flag-icon{flex-shrink:0;margin-top:2px}
+.flag-txt{font-size:13px;color:var(--mu);line-height:1.5}
+.panel-risk{background:rgba(122,32,32,.08);border:1px solid rgba(198,80,80,.15)}
+.panel-risk .panel-title{color:#e89a9a}
+.panel-green{background:rgba(46,92,74,.1);border:1px solid rgba(79,127,112,.2)}
+.panel-green .panel-title{color:var(--p300)}
+.divider{height:1px;background:var(--bdr);margin:16px 0}
+/* ── MODAL ───────────────────────────────────────────── */
+.modal-bg{position:fixed;inset:0;background:rgba(6,14,9,.92);z-index:100;display:flex;align-items:center;justify-content:center;padding:24px}
+.modal-box{background:var(--surf);border:1px solid var(--bdr);border-radius:6px;padding:32px;max-width:480px;width:100%}
+.modal-input{width:100%;padding:12px 14px;background:var(--card);border:1px solid var(--bdr);color:var(--tx);font-family:var(--fm);font-size:12px;border-radius:3px;outline:none}
+/* ── TOAST ───────────────────────────────────────────── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(122,32,32,.95);border:1px solid rgba(198,80,80,.3);color:#fbb;padding:14px 20px;border-radius:4px;z-index:200;font-size:13px;max-width:520px;text-align:center;animation:fadein .3s ease}
+/* ── ANIMATIONS ──────────────────────────────────────── */
+@keyframes fadein{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.fade{animation:fadein .5s ease}
+/* ── UTILS ───────────────────────────────────────────── */
+.flex{display:flex}.flex-col{flex-direction:column}.items-center{align-items:center}
+.justify-center{justify-content:center}.justify-between{justify-content:space-between}
+.gap-2{gap:8px}.gap-3{gap:12px}.gap-4{gap:16px}
+.wrap{flex-wrap:wrap}.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.mt-1{margin-top:4px}.mt-2{margin-top:8px}.mt-3{margin-top:12px}.mt-4{margin-top:16px}
+.mt-6{margin-top:24px}.mt-8{margin-top:32px}.mt-10{margin-top:40px}.mt-12{margin-top:48px}
+.mb-1{margin-bottom:4px}.mb-2{margin-bottom:8px}.mb-3{margin-bottom:12px}
+.mb-4{margin-bottom:16px}.mb-6{margin-bottom:24px}.mb-8{margin-bottom:32px}
+.text-right{text-align:right}
+@media(max-width:640px){.grid-2{grid-template-columns:1fr}.cx,.cx-sm,.cx-lg{padding:0 16px}}
+/* ── PRINT ───────────────────────────────────────────── */
+@media print{#app::before,#app::after{display:none}.no-print{display:none!important}.dim-card,.panel{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+'use strict';
+/* ════════════════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════════════════ */
+const state={
+  screen:'entry',type:null,secIdx:0,
+  answers:{},signals:[],allSignals:[],
+  persona:null,processing:false,procStage:0,
+  apiKey:safeLS('pat_key')||'',
+  showSettings:false,error:null,
+};
+function safeLS(k){try{return localStorage.getItem(k);}catch{return null;}}
+function safeLSSet(k,v){try{localStorage.setItem(k,v);}catch{}}
+function setState(patch){Object.assign(state,patch);render();}
+
+/* ════════════════════════════════════════════════════════
+   DATA
+════════════════════════════════════════════════════════ */
+const SIGNALS=[
+  {p:["low maintenance","easy maintenance","minimum maintenance"],l:"Operational Fear",i:"Fear of post-handover operational complexity",m:"NDPPFF — Fear",s:"Lead with native ecology OPEX narrative and maintenance zoning",c:"warn"},
+  {p:["iconic","world-class","landmark"],l:"Status Aspiration",i:"Prestige-seeking; peer comparison anxiety",m:"Maslow — Esteem",s:"Lead with award potential and prestige portfolio references",c:"amber"},
+  {p:["fast","quickly","urgent","asap"],l:"Urgency Signal",i:"Timeline pressure or trust deficit present",m:"Temporal Intelligence",s:"Phased deliverable; concept renders first strategy",c:"warn"},
+  {p:["simple","clean","minimal","understated"],l:"Identity Encoding",i:"'Simple' may mean effortless sophistication, not minimalism",m:"Means-End Chain",s:"Probe meaning. Position as curated ecology",c:"amber"},
+  {p:["natural","wild","organic","forest"],l:"Control Tension",i:"Nature desire may coexist with control anxiety",m:"Aesthetic Psychology",s:"Distinguish guided ecology from wildness",c:"green"},
+  {p:["timeless","permanent","lasting","endure"],l:"Permanence Desire",i:"Fear of irrelevance or obsolescence",m:"Narrative Identity",s:"Frame around intergenerational relevance and succession narrative",c:"green"},
+  {p:["sustainable","ecological","regenerative","responsible"],l:"Ecological Signal",i:"May be genuine alignment or identity language — probe depth",m:"Spiral Dynamics",s:"Probe: What does sustainability mean operationally?",c:"green"},
+  {p:["legacy","generation","grandchild","future","heritage"],l:"Legacy Fantasy",i:"Intergenerational significance — legacy chapter active",m:"NDPPFF — Fantasy",s:"Succession planting; 20-year maturation narrative; GDHI™ pathway",c:"green"},
+  {p:["family","spouse","children"],l:"Emotional Veto Risk",i:"Family stakeholder holds influence — hidden veto risk",m:"Political Ecology",s:"Request joint meeting; map family influence dynamics",c:"warn"},
+  {p:["committee","board","trustee","approval"],l:"Governance Complexity",i:"Distributed decision authority — high political friction risk",m:"Decision Ecology",s:"Decision Ecology Map mandatory before proposal",c:"warn"},
+  {p:["luxury","premium","exclusive","bespoke"],l:"Prestige Aspiration",i:"Achiever or Innovator VALS segment",m:"VALS — Achiever",s:"Exclusive portfolio references; social proof from peer tier",c:"amber"},
+  {p:["innovative","cutting-edge","unique","different"],l:"Aspirational Gap",i:"Aspiration may exceed risk tolerance for innovation",m:"Aspirational Gap",s:"Frame innovation as safe evolution",c:"amber"},
+  {p:["budget","cost","expensive"],l:"Financial Sensitivity",i:"Cost concern or negotiating posture signal",m:"Prospect Theory",s:"Reference point architecture before fee discussion",c:"warn"},
+  {p:["disappointed","failed","bad experience","problem"],l:"Failure Memory",i:"Scar tissue present — trust deficit elevated",m:"Failure Memory Analysis",s:"Site Intelligence Session first; slow the engagement",c:"warn"},
+  {p:["biodiversity","native species","ecosystem","habitat"],l:"Deep Ecological Alignment",i:"Green or Yellow vMeme — genuine ecological interest",m:"Spiral Dynamics",s:"Full ILI™ framework; GDHI™; ecological intelligence mode",c:"green"},
+  {p:["steward","stewardship","conservation"],l:"Stewardship Values",i:"Turquoise vMeme — highest ecological alignment",m:"Spiral Dynamics — Turquoise",s:"GDHI™ Platinum; EmOLscape™; biodiversity documentation",c:"green"},
+  {p:["prestige","reputation","recognition","award"],l:"Social Proof Desire",i:"External validation sought; social perception matters",m:"Social Perception Mapping",s:"Award pathway; publication strategy; documentation as deliverable",c:"amber"},
+  {p:["water","drainage","flooding","irrigation"],l:"Water Concern",i:"Technical concern or failure memory around water management",m:"WSUD Intelligence",s:"Lead with WSUD analysis; drainage strategy before design concept",c:"amber"},
+];
+function detectSignals(text){
+  if(!text||text.length<3)return[];
+  const low=text.toLowerCase(),found=[],seen=new Set();
+  SIGNALS.forEach(e=>{e.p.forEach(ph=>{if(!seen.has(e.l)&&low.includes(ph)){found.push(e);seen.add(e.l);}});});
+  return found;
+}
+
+const ARCH={
+  hni:{l:"HNI / Legacy Estate",icon:"🌿",d:"Emotionally invested in land. Legacy, identity, and intergenerational meaning are central drivers."},
+  developer:{l:"Developer / Builder",icon:"🏗️",d:"Evaluating landscape as a sales asset, brand differentiator, or OPEX risk to manage commercially."},
+  institutional:{l:"Institutional Client",icon:"🏛️",d:"Hospital, campus, or corporate with distributed decision-making and institutional credibility stakes."},
+  architect:{l:"Architect / Designer",icon:"📐",d:"Design professional with creative authority and referral potential. Professional identity matters."},
+  resort:{l:"Resort / Hospitality",icon:"🌴",d:"Operator evaluating landscape as guest experience asset and brand differentiation instrument."},
+};
+
+const QS={
+  hni:[
+    {s:"Relationship with Land",sub:"Understanding your connection to this place",qs:[
+      {id:"tenure",t:"radio",l:"How long have you owned this property?",o:["Under 2 years","2–10 years","10+ years","Family heritage / ancestral land"]},
+      {id:"connection",t:"text",l:"What drew you to this land? What does it mean to you personally?",ph:"Describe what makes this place significant…"},
+      {id:"use",t:"multi",l:"How is the property currently used? (Select all that apply)",o:["Weekend retreat","Primary residence","Entertainment estate","Family gathering","Not yet in active use"]},
+      {id:"feel",t:"radio",l:"When you visit this property, you primarily feel:",o:["Proud and deeply connected","Peaceful and restored","Aspirational — it could be so much more","Frustrated by its current state","Uncertain about the direction"]},
+    ]},
+    {s:"Vision & Legacy",sub:"What this landscape must become",qs:[
+      {id:"vision",t:"text",l:"When you imagine this landscape 20 years from now, what do you see?",ph:"Describe the ecological, aesthetic, and experiential vision…"},
+      {id:"for_whom",t:"radio",l:"Who is this project ultimately for?",o:["Myself — personal retreat and identity","My immediate family","Future generations — a lasting legacy","Community and social recognition","All of these — layered purpose"]},
+      {id:"eco_pri",t:"slider",l:"Ecological authenticity vs. Aesthetic control",left:"Purely aesthetic",right:"Deeply ecological"},
+      {id:"success",t:"text",l:"What would success look like at 3 years post-completion?",ph:"Describe both the physical and emotional outcome…"},
+    ]},
+    {s:"Operational Reality & Priorities",sub:"The honest picture",qs:[
+      {id:"mgmt",t:"radio",l:"Who currently manages this property?",o:["Dedicated in-house staff","Outsourced contractor","Self-managed","No active management currently"]},
+      {id:"maint",t:"radio",l:"How do you genuinely feel about landscape maintenance?",o:["I love being actively involved","I want minimal attention required","I have excellent staff I trust","It worries me — unsure it can be sustained"]},
+      {id:"concern",t:"text",l:"What is your biggest concern about this project?",ph:"Be honest — this is where the most useful intelligence lives…"},
+      {id:"palloc",t:"alloc",l:"Distribute 100 points across your priorities:",dims:["Ecological performance","Aesthetic experience","Legacy & meaning","Social prestige","Cost efficiency"]},
+    ]},
+  ],
+  developer:[
+    {s:"Project Context",sub:"The commercial landscape",qs:[
+      {id:"ptype",t:"radio",l:"Project typology:",o:["Residential apartment development","Plotted / villa development","Mixed-use commercial","Integrated township","Standalone commercial campus"]},
+      {id:"lpos",t:"radio",l:"Where does landscape sit in your marketing narrative?",o:["Core USP — primary differentiator","Important supporting feature","Regulatory compliance requirement","Not yet positioned"]},
+      {id:"capex",t:"radio",l:"Landscape CAPEX allocated (% of total project cost):",o:["Under 2%","2–5%","5–10%","10%+ — landscape is a significant investment","Not yet fixed"]},
+      {id:"pmc",t:"radio",l:"Is there a PMC or project management structure?",o:["Yes — actively managing approvals","Yes — but peripherally involved","No — direct client management","Not yet assigned"]},
+    ]},
+    {s:"Sales, Brand & Operations",sub:"The commercial logic",qs:[
+      {id:"buyer",t:"radio",l:"Target buyer profile:",o:["Affordable / entry-level","Mid-income professional","Premium aspirational","Luxury / HNI","Institutional or corporate"]},
+      {id:"feedback",t:"radio",l:"Has landscape been cited in buyer feedback or sales conversations?",o:["Yes — very positively","Yes — mixed feedback","Negatively cited as a concern","Never tracked"]},
+      {id:"benchmarks",t:"text",l:"Which comparable projects are your reference benchmarks?",ph:"Name the developments your target buyer compares you against…"},
+      {id:"opex",t:"radio",l:"How concerned are you about landscape OPEX post-handover?",o:["Very concerned — it has been a problem before","Somewhat concerned","Not a priority","No view on this yet"]},
+    ]},
+    {s:"Strategic Priorities",sub:"Where your investment is directed",qs:[
+      {id:"handover",t:"radio",l:"Post-handover maintenance strategy:",o:["Resident Welfare Association","In-house maintenance team","Outsourced specialist contractor","Not yet decided"]},
+      {id:"palloc",t:"alloc",l:"Distribute 100 points across your landscape investment priorities:",dims:["Sales conversion / buyer appeal","OPEX reduction / efficiency","Brand differentiation","Ecological credibility","Speed of delivery"]},
+      {id:"hesitation",t:"text",l:"What would make you hesitate to engage a landscape consultant?",ph:"Surface your real concerns…"},
+    ]},
+  ],
+  institutional:[
+    {s:"Institutional Context",sub:"The organisation and its decision structure",qs:[
+      {id:"itype",t:"radio",l:"Institution type:",o:["Hospital / Healthcare","Medical / Nursing college","School (K–12)","University / College campus","Corporate headquarters","R&D / Technology campus","Cultural or civic institution"]},
+      {id:"authority",t:"radio",l:"Who holds final decision authority?",o:["Single founder or owner","Board of trustees / governing body","Executive committee","Department head or administrator","Shared / unclear at this stage"]},
+      {id:"size",t:"radio",l:"Approximate campus landscape area:",o:["Under 2 acres","2–10 acres","10–50 acres","50+ acres","Multiple campuses"]},
+      {id:"mgmt",t:"radio",l:"How is landscape currently managed?",o:["In-house horticulture team","Outsourced maintenance contractor","Minimal / reactive maintenance","No formal landscape management"]},
+    ]},
+    {s:"Functional, Regulatory & Strategic",sub:"What this landscape must serve",qs:[
+      {id:"accred",t:"multi",l:"Which are relevant to your institution? (Select all that apply)",o:["NAAC accreditation review planned","NABH quality standards","LEED / IGBC green certification","ESG reporting mandate","None currently"]},
+      {id:"constraints",t:"radio",l:"Are there functional constraints on landscape?",o:["Yes — strict clinical / safety protocols","Yes — some constraints to work within","Minimal constraints","Not applicable"]},
+      {id:"success",t:"text",l:"What does landscape success look like for your institution in 3 years?",ph:"Consider: user experience, institutional reputation, functional performance…"},
+      {id:"palloc",t:"alloc",l:"Distribute 100 points across your institutional priorities:",dims:["Wellbeing & user experience","Institutional credibility","Environmental performance","Operational efficiency","Aesthetic quality"]},
+    ]},
+  ],
+  architect:[
+    {s:"Professional Relationship & Design",sub:"Understanding the collaboration structure",qs:[
+      {id:"role",t:"radio",l:"Your role on this project:",o:["Lead design consultant","Part of a larger design team","Design-build or integrated delivery","Advisory / concept role only"]},
+      {id:"authority",t:"radio",l:"Your authority over landscape decisions:",o:["Full design control","Advisory — client makes final calls","Shared equally with client","Client-directed — I am coordinating"]},
+      {id:"dlang",t:"radio",l:"Your design language for this project:",o:["Minimalist / restrained","Organic / naturalistic","Heritage / contextual","Contemporary / bold","Site-specific / adaptive"]},
+      {id:"ecrole",t:"radio",l:"How important is ecological performance in this project brief?",o:["Central — ecology drives the concept","Important alongside aesthetics","Secondary to aesthetic goals","Not a current priority"]},
+    ]},
+    {s:"Strategic Intelligence",sub:"The longer-term opportunity",qs:[
+      {id:"concern",t:"text",l:"What concerns you most about landscape coordination on complex projects?",ph:"Where does the friction usually appear?"},
+      {id:"cperc",t:"radio",l:"How does your client currently perceive landscape?",o:["Integral to the design — they understand its value","An important finishing element","Primarily a compliance issue","Uncertain — not yet discussed"]},
+      {id:"prevla",t:"radio",l:"Previous collaboration with a landscape architect:",o:["Yes — excellent and productive","Yes — mixed experience","Yes — disappointing","This is the first time"]},
+      {id:"palloc",t:"alloc",l:"Distribute 100 points across your collaboration priorities:",dims:["Design coherence & alignment","Ecological performance","Client satisfaction","Professional recognition","Delivery reliability"]},
+    ]},
+  ],
+  resort:[
+    {s:"Property & Brand Context",sub:"Understanding the guest-facing asset",qs:[
+      {id:"ptype",t:"radio",l:"Property category:",o:["Boutique resort / nature retreat","Luxury hotel or resort","Heritage property","Business hotel / corporate retreat","Wellness destination","Adventure tourism property"]},
+      {id:"guest",t:"radio",l:"Primary guest profile:",o:["Couples / leisure","Families","Corporate / MICE","International travellers","Adventure / eco-tourism","Mixed"]},
+      {id:"brand",t:"radio",l:"How does landscape feature in your brand materials?",o:["Central — primary marketing visual","Supporting element in collateral","Rarely featured — not a strength","We want to change this"]},
+      {id:"benchmarks",t:"text",l:"Which properties are your aspirational reference benchmarks?",ph:"Name the resorts or hospitality brands guests compare you to…"},
+    ]},
+    {s:"Operations, Experience & Strategy",sub:"The guest journey this landscape must create",qs:[
+      {id:"mteam",t:"radio",l:"Current landscape maintenance structure:",o:["In-house horticulturist or dedicated team","Outsourced specialist contractor","General maintenance team (not specialised)","No dedicated team currently"]},
+      {id:"opex",t:"radio",l:"Current landscape OPEX position:",o:["Acceptable and manageable","A growing concern","A significant operational burden","Unknown — not tracked"]},
+      {id:"emotion",t:"text",l:"What should guests feel from arrival to departure because of this landscape?",ph:"Describe the emotional journey — sensory, spatial, experiential…"},
+      {id:"palloc",t:"alloc",l:"Distribute 100 points across your landscape investment priorities:",dims:["Guest experience quality","Photogenic / Instagrammable quality","OPEX efficiency","Ecological story / credential","Brand differentiation"]},
+    ]},
+  ],
+};
+
+/* ════════════════════════════════════════════════════════
+   HTML GENERATORS
+════════════════════════════════════════════════════════ */
+function sigTag(s){
+  const cls=s.c==='green'?'sig-green':s.c==='warn'?'sig-warn':'sig-amber';
+  return`<span class="sig ${cls}">◉ ${s.l}</span>`;
+}
+
+function renderEntry(){
+  return`<div class="scr flex flex-col items-center justify-center" style="padding:48px 24px">
+  <div style="max-width:560px;width:100%;text-align:center" class="fade">
+    <p class="mono mb-8" style="font-size:10px;color:var(--p300);letter-spacing:.12em">GREENSCAPE DESIGNZ · INTERNAL INTELLIGENCE PLATFORM</p>
+    <h1 class="display mb-4" style="font-size:clamp(48px,10vw,72px);color:var(--p100)">
+      Patronage<br><em style="color:var(--p300)">Intelligence</em>
+    </h1>
+    <p class="mono" style="font-size:11px;color:var(--mu);margin-bottom:8px">Stakeholder Intelligence System · v1.0</p>
+    <div style="height:1px;background:var(--bdr);width:80px;margin:32px auto"></div>
+    <p style="font-size:15px;color:var(--mu);line-height:1.8;margin-bottom:40px">
+      Decode what clients actually need — beneath what they say they need.<br>
+      Generate a 12-dimension strategic persona card in under 10 minutes.
+    </p>
+    <div class="flex justify-center gap-3 wrap">
+      <button class="btn btn-primary" onclick="setState({screen:'stakeholder'})">Begin Strategic Assessment →</button>
+      <button class="btn btn-ghost btn-sm" onclick="setState({showSettings:true})">⚙ API Settings</button>
+    </div>
+    <p class="mono mt-10" style="font-size:10px;color:var(--dim)">18 signal models · 5 stakeholder branches · 12-dimension persona card · Claude API powered</p>
+  </div></div>`;
+}
+
+function renderStakeholder(){
+  const cards=Object.entries(ARCH).map(([k,a])=>`
+  <button class="card card-hover text-left" style="cursor:pointer;background:var(--card)" onclick="setState({type:'${k}',screen:'questions',secIdx:0,answers:{},signals:[],allSignals:[]})">
+    <div style="font-size:32px;margin-bottom:16px">${a.icon}</div>
+    <div style="font-size:17px;font-weight:600;color:var(--p100);margin-bottom:8px">${a.l}</div>
+    <p style="font-size:13px;color:var(--mu);line-height:1.6;margin-bottom:16px">${a.d}</p>
+    <span class="mono" style="font-size:11px;color:var(--p400)">Begin assessment →</span>
+  </button>`).join('');
+  return`<div class="scr cx" style="padding-top:48px;padding-bottom:48px">
+  <button class="btn btn-ghost btn-sm mb-8" style="font-family:var(--fm);font-size:11px" onclick="setState({screen:'entry'})">← Back</button>
+  <p class="label mb-2">STEP 01 OF 03</p>
+  <h2 class="display mb-2" style="font-size:36px;color:var(--p100)">Who are you assessing?</h2>
+  <p style="font-size:15px;color:var(--mu);margin-bottom:40px">Select the stakeholder type. Questions adapt to their specific psychology and decision context.</p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px">${cards}</div>
+  </div>`;
+}
+
+function renderQuestions(){
+  const secs=QS[state.type]||[];
+  const sec=secs[state.secIdx];
+  if(!sec)return'';
+  const isLast=state.secIdx===secs.length-1;
+  const progSegs=secs.map((_,i)=>`<div class="prog-seg ${i<=state.secIdx?'prog-done':'prog-todo'}"></div>`).join('');
+
+  const qHTML=sec.qs.map(q=>{
+    const v=state.answers[q.id];
+    if(q.t==='radio') return renderRadio(q,v);
+    if(q.t==='multi') return renderMulti(q,v||[]);
+    if(q.t==='text')  return renderText(q,v||'');
+    if(q.t==='slider')return renderSlider(q,v===undefined?50:v);
+    if(q.t==='alloc') return renderAlloc(q,v||{});
+    return'';
+  }).join('');
+
+  const allSigHTML=state.allSignals.length>0
+    ?`<div class="card mt-6" style="background:var(--surf)">
+      <p class="label mb-3" style="color:var(--p400)">INTELLIGENCE SIGNALS DETECTED</p>
+      <div class="sig-wrap">${state.allSignals.slice(0,8).map(sigTag).join('')}${state.allSignals.length>8?`<span class="mono" style="font-size:10px;color:var(--dim)">+${state.allSignals.length-8} more</span>`:''}</div>
+    </div>`:''  ;
+
+  const canNext=sec.qs.every(q=>q.t==='alloc'||q.t==='slider'||(state.answers[q.id]!==undefined&&state.answers[q.id]!==''));
+
+  return`<div class="scr cx-sm" style="padding-top:40px;padding-bottom:48px">
+  <div class="flex items-center justify-between mb-8">
+    <button class="btn btn-ghost btn-sm" style="font-family:var(--fm);font-size:11px" onclick="navBack()">← ${state.secIdx>0?'Previous':'Back'}</button>
+    <div class="prog-wrap">${progSegs}</div>
+    <span class="mono" style="font-size:11px;color:var(--dim)">${state.secIdx+1} / ${secs.length}</span>
+  </div>
+  <p class="label mb-2" style="color:var(--p300)">STEP 02 OF 03 · ${ARCH[state.type]?.l?.toUpperCase()}</p>
+  <h2 class="display mb-1" style="font-size:28px;color:var(--p100)">${sec.s}</h2>
+  <p style="font-size:14px;color:var(--mu);margin-bottom:32px">${sec.sub}</p>
+  <div id="q-blocks">${qHTML}</div>
+  ${allSigHTML}
+  <div class="flex justify-between items-center mt-8">
+    <span></span>
+    <button class="btn ${canNext?'btn-primary':'btn-ghost'}" style="opacity:${canNext?1:.5};cursor:${canNext?'pointer':'not-allowed'}"
+      onclick="${canNext?isLast?'submitForm()':'nextSection()':'void(0)'}">
+      ${isLast?'Generate Intelligence Report →':'Continue →'}
+    </button>
+  </div>
+  </div>`;
+}
+
+function renderRadio(q,v){
+  const opts=q.o.map(o=>`
+  <div class="opt-row" onclick="setRadio('${q.id}','${esc(o)}',this)">
+    <div class="opt-radio ${v===o?'active':''}" data-id="${q.id}" data-val="${esc(o)}"></div>
+    <span class="opt-label ${v===o?'active':''}">${o}</span>
+  </div>`).join('');
+  return`<div class="q-block"><span class="q-label">${q.l}</span>${opts}</div>`;
+}
+
+function renderMulti(q,v){
+  const opts=q.o.map(o=>`
+  <div class="opt-row" onclick="toggleMulti('${q.id}','${esc(o)}',this)">
+    <div class="opt-check ${v.includes(o)?'active':''}" data-id="${q.id}" data-val="${esc(o)}">${v.includes(o)?'✓':''}</div>
+    <span class="opt-label ${v.includes(o)?'active':''}">${o}</span>
+  </div>`).join('');
+  return`<div class="q-block"><span class="q-label">${q.l}</span>${opts}</div>`;
+}
+
+function renderText(q,v){
+  const sigs=detectSignals(v);
+  const sigHTML=sigs.length>0?`<div class="sig-wrap">${sigs.map(sigTag).join('')}</div>`:'';
+  return`<div class="q-block">
+  <span class="q-label">${q.l}</span>
+  <textarea class="q-ta" id="ta-${q.id}" placeholder="${q.ph||'Type your response…'}" oninput="handleText('${q.id}',this.value)">${esc(v)}</textarea>
+  <div id="sigs-${q.id}">${sigHTML}</div>
+  </div>`;
+}
+
+function renderSlider(q,v){
+  return`<div class="q-block">
+  <span class="q-label">${q.l}</span>
+  <div class="range-wrap">
+    <input type="range" min="0" max="100" value="${v}" oninput="handleSlider('${q.id}',this.value)">
+    <div class="range-labels">
+      <span class="range-label">${q.left}</span>
+      <span class="range-val" id="sv-${q.id}">${v}</span>
+      <span class="range-label text-right">${q.right}</span>
+    </div>
+  </div></div>`;
+}
+
+function renderAlloc(q,v){
+  const total=q.dims.reduce((s,d)=>s+(v[d]||0),0);
+  const rem=100-total;
+  const rows=q.dims.map(d=>`
+  <div style="margin-bottom:16px">
+    <div class="flex justify-between mb-1">
+      <span style="font-size:13px;color:var(--tx)">${d}</span>
+      <span class="mono" style="font-size:11px;color:var(--p300)" id="av-${q.id}-${esc(d)}">${v[d]||0} pts</span>
+    </div>
+    <input type="range" min="0" max="100" value="${v[d]||0}" oninput="handleAlloc('${q.id}','${esc(d)}',this.value)">
+  </div>`).join('');
+  return`<div class="q-block">
+  <span class="q-label">${q.l}</span>
+  <p class="mono mb-4" id="rem-${q.id}" style="font-size:10px;color:${rem===0?'var(--p300)':rem<0?'#e89a9a':'var(--dim)'}">
+    ${rem===0?'✓ 100 points allocated':`${rem} points remaining`}
+  </p>
+  ${rows}</div>`;
+}
+
+function renderProcessing(){
+  const sigs=state.allSignals.slice(0,5).map(sigTag).join('');
+  return`<div class="scr flex flex-col items-center justify-center" style="padding:48px 24px">
+  <div style="max-width:480px;width:100%;text-align:center" class="fade">
+    <div class="spinner" style="margin:0 auto 40px"></div>
+    <h2 class="display mb-2" style="font-size:28px;color:var(--p100)">Processing Intelligence</h2>
+    <p style="font-size:14px;color:var(--mu);margin-bottom:32px">Activating 47-model stakeholder intelligence framework</p>
+    <p class="mono" id="proc-stage" style="font-size:12px;color:var(--p300);min-height:20px">${PROC_STAGES[state.procStage]||''}</p>
+    <div class="proc-bar mt-3">
+      <div class="proc-fill" id="proc-fill" style="width:${Math.round(((state.procStage+1)/PROC_STAGES.length)*100)}%"></div>
+    </div>
+    ${sigs?`<div class="sig-wrap mt-8" style="justify-content:center">${sigs}</div>`:''}
+  </div></div>`;
+}
+
+const PROC_STAGES=[
+  "Mapping stakeholder signals…","Activating NDPPFF framework…","Running Competency Iceberg analysis…",
+  "Calibrating DISC communication profile…","Applying Means-End Chain laddering…","Scoring Buyer Readiness stage…",
+  "Detecting cognitive bias patterns…","Running Trust Architecture assessment…","Mapping Decision Ecology layers…",
+  "Analysing Spiral Dynamics vMeme level…","Synthesising Persona Card dimensions…","Generating strategic intelligence…",
+];
+
+function renderPersona(){
+  const p=state.persona;
+  const arch=ARCH[state.type];
+  const ts=new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
+
+  const dims=[
+    {n:"Primary Motivation",v:p.primaryMotivation,m:"NDPPFF · Core Driver"},
+    {n:"Hidden Fear",v:p.hiddenFear,m:"Competency Iceberg"},
+    {n:"Fantasy State",v:p.fantasyState,m:"NDPPFF · Fantasy Layer"},
+    {n:"Story Arc",v:p.storyArc,m:"Narrative Identity"},
+    {n:"Communication Style",v:p.discStyle,m:"DISC Profile",i:p.discInsight},
+    {n:"Motivation Level",v:p.maslowLevel,m:"Maslow Hierarchy",i:p.maslowInsight},
+    {n:"Buyer Readiness",v:p.buyerReadiness,m:"Readiness Model"},
+    {n:"Value System",v:p.vMeme,m:"Spiral Dynamics",i:p.vMemeInsight},
+    {n:"Trust Deficit",v:p.trustDeficit,m:"Trust Architecture"},
+    {n:"Primary Cognitive Bias",v:p.primaryBias,m:"Cognitive Bias",i:p.biasStrategy},
+    {n:"Key Influence Lever",v:p.cialdiniPrinciple,m:"Cialdini Principles"},
+    {n:"Proposal Format",v:p.proposalFormat,m:"Communication Intelligence"},
+  ];
+
+  const dimHTML=dims.map(d=>`
+  <div class="dim-card">
+    <div class="dim-model">${d.m}</div>
+    <div class="dim-name">${d.n}</div>
+    <div class="dim-val">${d.v||'—'}</div>
+    ${d.i?`<div class="dim-insight">${d.i}</div>`:''}
+  </div>`).join('');
+
+  const risks=(p.riskFlags||[]).map(r=>`<div class="flag-row"><span class="flag-icon" style="color:#e89a9a">›</span><p class="flag-txt">${r}</p></div>`).join('');
+  const greens=(p.greenFlags||[]).map(g=>`<div class="flag-row"><span class="flag-icon" style="color:var(--p300)">›</span><p class="flag-txt">${g}</p></div>`).join('');
+
+  const sigHTML=state.allSignals.length>0
+    ?`<div class="panel mt-4"><p class="panel-title">INTAKE SIGNALS MAPPED (${state.allSignals.length} detected)</p>
+    <div class="sig-wrap">${state.allSignals.map(sigTag).join('')}</div></div>`:''  ;
+
+  return`<div class="scr cx-lg" style="padding-top:40px;padding-bottom:48px">
+  <div class="flex items-start justify-between mb-8 wrap gap-4">
+    <div>
+      <p class="label mb-2" style="color:var(--p300)">PATRONAGE INTELLIGENCE · STRATEGIC PERSONA CARD</p>
+      <h2 class="display mb-1" style="font-size:36px;color:var(--p100)">${arch.l}</h2>
+      <p class="mono" style="font-size:10px;color:var(--dim)">Generated ${ts} · ${state.allSignals.length} signals detected · 12 dimensions mapped</p>
+    </div>
+    <div class="flex gap-3 no-print">
+      <button class="btn btn-ghost btn-sm" onclick="window.print()">⎙ Print</button>
+      <button class="btn btn-ghost btn-sm" onclick="setState({screen:'entry',persona:null,type:null,answers:{},signals:[],allSignals:[]})">↩ New Assessment</button>
+    </div>
+  </div>
+
+  <div class="dim-grid mb-4">${dimHTML}</div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:16px">
+    <div class="panel" style="border-color:rgba(79,127,112,.3)">
+      <p class="panel-title">STRATEGIC RECOMMENDATION</p>
+      <p style="font-size:14px;color:var(--p100);line-height:1.7;margin-bottom:16px">${p.strategicRecommendation||'—'}</p>
+      <div class="divider"></div>
+      <p class="panel-sub">COMMUNICATION PROTOCOL</p>
+      <p style="font-size:13px;color:var(--mu);line-height:1.6">${p.communicationProtocol||'—'}</p>
+    </div>
+    <div class="panel" style="border-color:rgba(79,127,112,.3)">
+      <p class="panel-title">FEE STRATEGY</p>
+      <p class="panel-sub">FEE CONVERSATION APPROACH</p>
+      <p style="font-size:13px;color:var(--mu);line-height:1.6;margin-bottom:16px">${p.feeStrategy||'—'}</p>
+      <div class="divider"></div>
+      <p class="panel-sub">KANO EXCITEMENT NEED TO DEPLOY</p>
+      <p style="font-size:13px;color:var(--p200);font-style:italic;line-height:1.6">${p.kanoDelighter||'—'}</p>
+    </div>
+    <div class="panel" style="border-color:rgba(79,127,112,.3)">
+      <p class="panel-title">PRE-MEETING PROTOCOL</p>
+      <p style="font-size:13px;color:var(--mu);line-height:1.6;margin-bottom:16px">${p.meetingPrep||'—'}</p>
+      <div class="divider"></div>
+      <p class="panel-sub">ADAPTIVE POSITIONING</p>
+      <p style="font-size:13px;color:var(--mu);line-height:1.6">${p.adaptivePositioning||'—'}</p>
+    </div>
+  </div>
+
+  <div class="grid-2 mb-4">
+    <div class="panel panel-risk">${risks||'<p class="flag-txt">No critical risk flags identified.</p>'}</div>
+    <div class="panel panel-green">${greens||'<p class="flag-txt">No positive signals detected.</p>'}</div>
+  </div>
+  ${sigHTML}
+  </div>`;
+}
+
+function renderSettings(){
+  return`<div class="modal-bg" onclick="if(event.target===this)setState({showSettings:false})">
+  <div class="modal-box fade">
+    <div class="flex justify-between items-center mb-6">
+      <h3 class="display" style="font-size:22px;color:var(--p100)">API Configuration</h3>
+      <button style="background:none;border:none;color:var(--mu);font-size:18px;cursor:pointer" onclick="setState({showSettings:false})">✕</button>
+    </div>
+    <p style="font-size:13px;color:var(--mu);line-height:1.7;margin-bottom:20px">
+      Enter your Anthropic API key for GitHub Pages deployment. When running inside Claude.ai, this field can be left empty — authentication is handled automatically.
+    </p>
+    <p class="label mb-2">ANTHROPIC API KEY</p>
+    <input type="password" class="modal-input mb-2" id="api-key-input" value="${esc(state.apiKey)}" placeholder="sk-ant-…">
+    <p class="mono mb-6" style="font-size:10px;color:var(--dim)">Stored in localStorage on this device only. Never sent anywhere except Anthropic.</p>
+    <div class="flex gap-3">
+      <button class="btn btn-primary" style="font-size:14px;padding:12px 24px" onclick="saveApiKey()">Save & Continue</button>
+      <button class="btn btn-ghost" style="font-size:14px;padding:12px 20px" onclick="setState({showSettings:false})">Cancel</button>
+    </div>
+  </div></div>`;
+}
+
+/* ════════════════════════════════════════════════════════
+   MAIN RENDER
+════════════════════════════════════════════════════════ */
+function render(){
+  const app=document.getElementById('app');
+  let html='';
+  switch(state.screen){
+    case'entry':       html=renderEntry();break;
+    case'stakeholder': html=renderStakeholder();break;
+    case'questions':   html=renderQuestions();break;
+    case'processing':  html=renderProcessing();break;
+    case'persona':     html=renderPersona();break;
+  }
+  app.innerHTML=html+(state.showSettings?renderSettings():'')+(state.error?renderToast():'');
+}
+
+function renderToast(){
+  return`<div class="toast">${state.error}${!state.apiKey?' — Add your Anthropic API key in ⚙ Settings.':''}
+  <button style="margin-left:12px;opacity:.6;background:none;border:none;cursor:pointer;color:#fbb" onclick="setState({error:null})">✕</button></div>`;
+}
+
+/* ════════════════════════════════════════════════════════
+   EVENT HANDLERS (direct DOM, no re-render)
+════════════════════════════════════════════════════════ */
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function setRadio(id,val,row){
+  state.answers[id]=val;
+  // Update visual without re-render
+  const block=row.closest('.q-block');
+  block.querySelectorAll('.opt-radio').forEach(r=>r.classList.remove('active'));
+  block.querySelectorAll('.opt-label').forEach(l=>l.classList.remove('active'));
+  row.querySelector('.opt-radio').classList.add('active');
+  row.querySelector('.opt-label').classList.add('active');
+  updateCanNext();
+}
+
+function toggleMulti(id,val,row){
+  const cur=state.answers[id]||[];
+  state.answers[id]=cur.includes(val)?cur.filter(v=>v!==val):[...cur,val];
+  const chk=row.querySelector('.opt-check');
+  const lbl=row.querySelector('.opt-label');
+  const isNow=state.answers[id].includes(val);
+  chk.classList.toggle('active',isNow);
+  chk.textContent=isNow?'✓':'';
+  lbl.classList.toggle('active',isNow);
+  updateCanNext();
+}
+
+function handleText(id,val){
+  state.answers[id]=val;
+  const sigs=detectSignals(val);
+  const sigContainer=document.getElementById('sigs-'+id);
+  if(sigContainer){
+    sigContainer.innerHTML=sigs.length>0?`<div class="sig-wrap">${sigs.map(sigTag).join('')}</div>`:'';
+  }
+  // Merge into allSignals
+  sigs.forEach(s=>{if(!state.allSignals.find(x=>x.l===s.l))state.allSignals.push(s);});
+  updateCanNext();
+}
+
+function handleSlider(id,val){
+  state.answers[id]=Number(val);
+  const el=document.getElementById('sv-'+id);
+  if(el)el.textContent=val;
+}
+
+function handleAlloc(id,dim,val){
+  if(!state.answers[id])state.answers[id]={};
+  state.answers[id][dim]=Number(val);
+  // Update display for this dim
+  const dimKey=id+'-'+dim;
+  const avEl=document.getElementById('av-'+dimKey);
+  if(avEl)avEl.textContent=val+' pts';
+  // Update remaining
+  const q=findAllocQ(id);
+  if(q){
+    const total=q.dims.reduce((s,d)=>s+(state.answers[id][d]||0),0);
+    const rem=100-total;
+    const remEl=document.getElementById('rem-'+id);
+    if(remEl){
+      remEl.textContent=rem===0?'✓ 100 points allocated':`${rem} points remaining`;
+      remEl.style.color=rem===0?'var(--p300)':rem<0?'#e89a9a':'var(--dim)';
+    }
+  }
+}
+
+function findAllocQ(id){
+  const secs=QS[state.type]||[];
+  for(const sec of secs)for(const q of sec.qs)if(q.id===id&&q.t==='alloc')return q;
+  return null;
+}
+
+function updateCanNext(){
+  const secs=QS[state.type]||[];
+  const sec=secs[state.secIdx];
+  if(!sec)return;
+  const can=sec.qs.every(q=>q.t==='alloc'||q.t==='slider'||(state.answers[q.id]!==undefined&&state.answers[q.id]!==''));
+  const btn=document.querySelector('.scr .btn-primary,.scr .btn-ghost');
+  if(!btn)return;
+  // find the next/submit button (last button in .scr)
+  const btns=document.querySelectorAll('.scr button');
+  if(btns.length<1)return;
+  const last=btns[btns.length-1];
+  last.style.opacity=can?'1':'0.5';
+  last.style.cursor=can?'pointer':'not-allowed';
+}
+
+function navBack(){
+  if(state.secIdx>0)setState({secIdx:state.secIdx-1});
+  else setState({screen:'stakeholder'});
+}
+
+function nextSection(){
+  const secs=QS[state.type]||[];
+  const sec=secs[state.secIdx];
+  const can=sec.qs.every(q=>q.t==='alloc'||q.t==='slider'||(state.answers[q.id]!==undefined&&state.answers[q.id]!==''));
+  if(!can)return;
+  setState({secIdx:state.secIdx+1});
+}
+
+function saveApiKey(){
+  const inp=document.getElementById('api-key-input');
+  if(inp){safeLSSet('pat_key',inp.value);state.apiKey=inp.value;}
+  setState({showSettings:false});
+}
+
+/* ════════════════════════════════════════════════════════
+   FORM SUBMIT + API
+════════════════════════════════════════════════════════ */
+async function submitForm(){
+  const secs=QS[state.type]||[];
+  const sec=secs[state.secIdx];
+  const can=sec.qs.every(q=>q.t==='alloc'||q.t==='slider'||(state.answers[q.id]!==undefined&&state.answers[q.id]!==''));
+  if(!can)return;
+  setState({screen:'processing',procStage:0,error:null});
+  startProcAnimation();
+  try{
+    const [persona]=await Promise.all([
+      callClaude(),
+      new Promise(r=>setTimeout(r,5000))
+    ]);
+    setState({persona,screen:'persona'});
+  }catch(e){
+    setState({screen:'questions',error:e.message});
+  }
+}
+
+let procTimer=null;
+function startProcAnimation(){
+  let i=0;
+  if(procTimer)clearInterval(procTimer);
+  procTimer=setInterval(()=>{
+    i=Math.min(i+1,PROC_STAGES.length-1);
+    const el=document.getElementById('proc-stage');
+    const fill=document.getElementById('proc-fill');
+    if(el)el.textContent=PROC_STAGES[i];
+    if(fill)fill.style.width=Math.round(((i+1)/PROC_STAGES.length)*100)+'%';
+    if(i===PROC_STAGES.length-1)clearInterval(procTimer);
+  },600);
+}
+
+function buildPrompt(){
+  const arch=ARCH[state.type];
+  const sigStr=state.allSignals.map(s=>`• ${s.l}: ${s.i} → ${s.s}`).join('\n')||'No explicit signals from text.';
+  const ansStr=Object.entries(state.answers).map(([k,v])=>{
+    if(typeof v==='object'&&!Array.isArray(v))return`${k}: ${Object.entries(v).map(([d,pts])=>`${d}=${pts}pts`).join(', ')}`;
+    return`${k}: ${Array.isArray(v)?v.join(', '):v}`;
+  }).join('\n');
+  return`You are Patronage Intelligence — a strategic stakeholder intelligence engine for Greenscape Designz, a premium landscape architecture practice in Bengaluru.
+
+STAKEHOLDER TYPE: ${arch.l}
+${arch.d}
+
+INTAKE RESPONSES:
+${ansStr}
+
+DETECTED SIGNALS:
+${sigStr}
+
+Generate a Strategic Persona Card as ONLY valid JSON with these exact fields:
+{
+  "primaryMotivation": "One precise sentence about the core driver behind this engagement",
+  "hiddenFear": "The unspoken fear that governs their most significant decisions",
+  "fantasyState": "The idealised outcome they privately imagine but rarely articulate",
+  "storyArc": "One sentence: the personal or organisational chapter this project represents",
+  "discStyle": "One of: D — Dominance / I — Influence / S — Steadiness / C — Conscientiousness",
+  "discInsight": "How to adapt every meeting, proposal, and communication to this style",
+  "maslowLevel": "One of: Safety-Functional / Belonging-Social / Esteem-Prestige / Self-Actualisation",
+  "maslowInsight": "What proposal language and register this level requires",
+  "buyerReadiness": "Stage 1–6 label with 1-sentence note",
+  "vMeme": "One of: Red / Blue / Orange / Green / Yellow / Turquoise",
+  "vMemeInsight": "What this means for ecological positioning and communication",
+  "trustDeficit": "Which trust dimension [Technical/Emotional/Strategic/Operational/Social/Identity] is most underdeveloped and why",
+  "primaryBias": "The dominant cognitive bias active in this client",
+  "biasStrategy": "How to reframe the proposal to work with this bias",
+  "strategicRecommendation": "Primary engagement and proposal strategy in 2–3 clear sentences",
+  "proposalFormat": "One of: Narrative-first / Data-first / Visual-first / Systems-first — and why",
+  "communicationProtocol": "How to structure every meeting and communication with this stakeholder",
+  "kanoDelighter": "The specific unexpected Excitement Need to deploy at engagement start",
+  "feeStrategy": "Reference point architecture and conversation sequence for the fee discussion",
+  "cialdiniPrinciple": "Primary Cialdini influence principle to activate — and how",
+  "riskFlags": ["Up to 4 specific actionable risk warnings"],
+  "greenFlags": ["Up to 4 specific positive alignment signals"],
+  "meetingPrep": "What to research and observe in the 20 minutes before the first meeting",
+  "adaptivePositioning": "How to position Greenscape Designz specifically for this profile"
+}
+
+Respond with ONLY the JSON object, no other text.`;
+}
+
+async function callClaude(){
+  const headers={"Content-Type":"application/json","anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"};
+  if(state.apiKey)headers["x-api-key"]=state.apiKey;
+  const res=await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",headers,
+    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2000,messages:[{role:"user",content:buildPrompt()}]})
+  });
+  if(!res.ok){const e=await res.json();throw new Error(e.error?.message||`API error ${res.status}`);}
+  const data=await res.json();
+  const text=data.content?.[0]?.text||"";
+  const clean=text.replace(/```json|```/g,"").trim();
+  try{return JSON.parse(clean);}catch{throw new Error("Could not parse intelligence response. Please retry.");}
+}
+
+/* ════════════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════════════ */
+render();
+</script>
+</body>
+</html>
